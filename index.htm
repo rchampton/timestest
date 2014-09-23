@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Times Tester</title>
+    <style>
+    	.alignright{text-align: right;}
+    	.textlarge{font-size: 24pt;}
+    	#progress{
+    		padding-bottom: 33px;
+    		margin-bottom: 33px;
+    	}
+    	#result{
+    		font-size:24px;
+    	}
+        #answer{
+        	font-size: 24pt;
+        	font-family: Times New Roman;
+        	width:75px;
+        	margin: 0px;
+        	padding: 0px;
+        }
+        #btnNext{
+        	width:75px;
+        	height: 48px;
+        	margin: 0px;
+        	padding: 0px;
+        }
+        .green{
+        	color:green;
+        }
+        #feedback{
+        	font-size:24pt;
+        }
+        .hide{
+            display:none;
+        }
+        .show{
+            display:inherit;
+        }
+    </style>
+    <script>
+        var ctrl, view;
+        var result={};
+
+        document.addEventListener('DOMContentLoaded', function(){
+            view=new View();
+            ctrl=new Ctrl(view);
+
+            view.showProgress(1,13);
+            view.showQuestion(ctrl.getQuestion());
+            addEventListener('seven.answered', ctrl.answered);
+            addEventListener('seven.resetbase', ctrl.resetBase);
+            document.getElementById('btnReload').addEventListener('click', ctrl.reload);
+        });
+
+        var View=function(){
+            var that=this;
+            var elOp1=document.getElementById('op1')
+                , elOp2=document.getElementById('op2')
+                , elAnswer=document.getElementById('answer')
+                , elBtnNext=document.getElementById('btnNext')
+                , elBase=document.getElementById('base')
+                , elProgress=document.getElementById('progress')
+                , elFeedback=document.getElementById('feedback')
+                ;
+            this.elForm=document.getElementById('form')
+            , this.elResult=document.getElementById('result')
+            , showResult=function(){
+                that.elResult.style.display='inherit';
+                that.elForm.style.display='none';
+
+                var good=0, bad=0, total=0;
+                for(var p in result )
+                    if(result[p])good+=1;
+                    else bad+=1;
+                total=good+bad;
+                var newp=document.createElement('p');
+                newp.innerHTML=''+good+ ' out of ' + total+'<br>';
+                newp.innerHTML+=(good/total*100).toFixed(0)+'%';
+                that.elResult.appendChild(newp);
+                btnReload.focus();
+            }
+            , answer_keydown=function(event){
+                if(elBtnNext.disabled){
+                    if(event.keyCode==9)event.preventDefault();
+                    return;
+                }
+                if(event.keyCode==13||event.keyCode==9||event.keyCode==39){
+                    var canceled=elBtnNext.dispatchEvent(new Event('click'));
+                    event.preventDefault();
+                }
+            }, btnNext_click=function(event){
+                dispatchEvent(new CustomEvent('seven.answered', {'detail':{'answer':elAnswer.value}}));
+                setTimeout(function(){
+                        elAnswer.value=''; 
+                        elAnswer.focus();
+                    },100);
+            }, showProgress=function(index, outof){
+                elProgress.innerHTML=''+index+' / '+outof;
+            }, this.showQuestion=function(q){
+                elAnswer.focus();
+                elOp1.innerHTML=q.op1
+                , elOp2.innerHTML=q.op2;
+            }, this.showFeedback=function(isCorrect, index, outof, q, isOver){
+                elBtnNext.disabled=true;
+                var delay=(isCorrect)?500:250;
+                if(isCorrect){
+                    elFeedback.innerHTML="Right!";
+                    elFeedback.setAttribute('class', 'green');
+                }else{
+                    elFeedback.innerHTML="Not quite..";
+                }
+                setTimeout(function(){
+                        elFeedback.innerHTML='';
+                        elFeedback.removeAttribute('class');
+                        elBtnNext.disabled=false;
+
+                        if(isCorrect){
+                            showProgress(index, outof);
+                            that.showQuestion(q);
+
+                            if(isOver){
+                                showResult();
+                            }
+                        }
+                    }, delay);
+            }, elBasePopulate=function(){
+                var elOpt;
+                for(var i=1; i<=13; i++){
+                    elOpt=document.createElement('option');
+                    elOpt.value=i;
+                    elOpt.innerHTML=i.toString();
+                    elBase.appendChild(elOpt);
+                }
+            }, elBase_change=function(event){
+                console.log('base changed to ' + event.srcElement.options[event.srcElement.options.selectedIndex].value);
+                //ctrl.resetBase(event.srcElement.options[event.srcElement.options.selectedIndex].value);
+                dispatchEvent(new CustomEvent('seven.resetbase', {'detail':{'newbase':event.srcElement.options[event.srcElement.options.selectedIndex].value}}));
+                showProgress(1,13);
+            }
+            ;
+
+            // Init
+            elBasePopulate();
+            elAnswer.addEventListener('keydown', answer_keydown);
+            elBtnNext.addEventListener('click', btnNext_click);
+            /* This works but you have the instance ref 'view' so, no good
+            this.bc=btnNext_click;
+            elBtnNext.addEventListener('click', function(){view.bc.apply(view)}); 
+            */
+            elBase.addEventListener('change', elBase_change);
+            
+            this.showProgress=showProgress;
+            return this;
+        };
+
+        var Ctrl=function(view){
+            var that=this;
+            this.user='User'
+            , this._hasQuestions=true
+            , this.view=view
+            , this.tt=new Timestable(1,13)
+            , this.ttr=this.tt.rowAt(3)
+            , this.rowIndex=1
+            , this.hasQuestions=function(){return that._hasQuestions;}
+            , this.currAnswer=function(){return that.ttr.valueAt(that.rowIndex)||undefined;}
+            , this.reload=function(){window.location.reload();}
+            , this.answered=function(event){
+                if(that.currAnswer()==event.detail.answer){
+                    if(!result.hasOwnProperty(that.rowIndex))
+                        result[that.rowIndex]=true;
+                    that.rowIndex+=1;
+                    view.showFeedback(true, that.rowIndex, 13, that.getQuestion(), (that.rowIndex>13)?true:false);
+                }else{
+                    if(!result.hasOwnProperty(that.rowIndex))
+                        result[that.rowIndex]=false;
+                    view.showFeedback(false);
+                }
+            }, this.getQuestion=function(){
+                return new Question(this.ttr.base, this.rowIndex, this.ttr.valueAt(this.rowIndex));
+            }, this.resetBase=function(event){
+                that._hasQuestions=false;
+                that.rowIndex=1;
+                that.ttr=that.tt.rowAt(event.detail.newbase);
+                that.view.showQuestion(that.getQuestion());
+            }
+            ;
+
+            return this;
+        };
+
+    </script>
+    <script>
+        var Question=function(op1, op2, answer){
+            this.op1=op1||0;
+            this.op2=op2||0;
+            this.answer=answer||0;
+
+            return this;
+        };
+
+        var Timestable=function(baseStart, baseEnd){
+            this.baseStart=baseStart;
+            this.baseEnd=baseEnd;
+            this.rows=[];
+            for(var b=baseStart; b<=baseEnd; b++)
+                this.rows.push(new TTRow(b));
+            return this;
+        };
+        Timestable.prototype.print=function(){
+            var output=this.rows[0].print()+'\n';
+            for(var i=1; i<this.rows.length; i++)
+                output+=this.rows[i].print(false)+'\n';
+            return output;
+        };
+        Timestable.prototype.valueAt=function(rowIndex, colIndex){
+            return (rowIndex<1||rowIndex>13)
+                ?undefined
+                :this.rows[rowIndex-1].valueAt(colIndex);
+        };
+        Timestable.prototype.rowAt=function(rowIndex){
+            // 
+            return this.rows[rowIndex-1];
+        };
+
+        var TTRow=function(base){
+            return new TimestableRow(base, 1, 13);
+        };
+
+        var TimestableRow=function(base, start, end){
+          this.base=base;
+          this.start=start;
+          this.end=end;
+          this.padlen=(this.base*this.end).toString().length+1;
+          this.values=[];
+          for(var i=start; i<end; i++)
+            this.values.push(i*this.base);
+
+          return this;
+        };
+        TimestableRow.prototype.print=function(withHeader){
+          if(withHeader==undefined)
+            withHeader=true;
+          var output='';
+          if(withHeader){
+              for(var i=this.start; i<=this.end; i++)
+                output+=(Array(this.padlen).join(' ')+i).substr(-1*this.padlen);
+              output+='\n';
+              for(var i=this.start; i<=this.end; i++)
+                output+=(Array(this.padlen).join(' ')+('--')).substr(-1*this.padlen);
+              output+='\n';
+          }
+          for(var i=this.start; i<=this.end; i++)
+            output+=(Array(this.padlen).join(' ')+(this.base*i)).substr(-1*this.padlen);
+          return output;
+        };
+        TimestableRow.prototype.valueAt=function(index){
+            if(index<1||(index>(this.end-this.start+1)))return undefined;
+            return this.base*(this.start+index-1);
+        };
+        TimestableRow.prototype.asArray=function(){
+            var result=[];
+            for(var i=0; i<this.end-this.start; i++){
+                result.push(this.valueAt(i+1));
+            }
+        };
+        TimestableRow.prototype.test=function(){
+            var ttr2=new TimestableRow(2,1,13);
+            console.log(ttr2.print());
+        };
+    </script>
+</head>
+<body>
+
+    <!-- The page header typically contains items such as your site heading, logo and possibly the main site navigation -->
+    <!-- ARIA: the landmark role "banner" is set as it is the prime heading or internal title of the page --> 
+    <header role="banner">
+        <h1><abbr title="Times Tester">Times Tester</abbr></h1>
+        
+        <!-- ARIA: the landmark role "navigation" is added here as the element contains site navigation
+        NOTE: The <nav> element does not have to be contained within a <header> element, even though the two examples on this page are. -->
+        <nav role="navigation">
+            <!-- This can contain your site navigation either in an unordered list or even a paragraph that contains links that allow users to navigate your site -->
+            <select id="base"><option value="">- Choose a base -</option></select>
+        </nav>
+    </header>
+    <hr>
+    <!-- If you want to use an element as a wrapper, i.e. for styling only, then <div> is still the element to use -->
+    <div id="content" class="wrap">
+        <div id="form">
+        	<table border="1" cellpadding="0" cellspacing="0">
+        		<tr><td style="padding-bottom: 33px; text-align:center;">
+					<span id="progress"></span>
+        		</td></tr>
+        		<tr><td class="alignright textlarge">
+                	<span id="op1" style="margin-left: 15px;">0</span>
+        		</td></tr>
+        		<tr><td class="alignright textlarge">
+	                <span>x</span><span id="op2">0</span>
+        		</td></tr>
+        		<tr><td>
+            	<hr>
+        		</td></tr>
+        		<tr><td>
+				    <input type="number" id="answer">
+				    <button id="btnNext">Go!</button>
+				</td></tr>
+				<tr><td>
+					<span id="feedback"></span>
+				</td></tr>
+			</table>
+        </div>
+
+        <div id="result" style="display:none;">
+            <h1>Result</h1>
+            <button id="btnReload">Restart</button>
+        </div>
+    </div>
+    
+    <!-- The main page footer can contain items such as copyright and contact information. It can also contain a duplicated navigation of your site which is not usually contained within a <nav> -->
+    <!-- ARIA: the landmark role "contentinfo" is added here as it contains metadata that applies to the parent document -->
+    <footer role="contentinfo">
+        <!-- Copyright information can be contained within the <small> element. The <time> element is used here to indicate that the '2013' is a date -->
+        <small>footer</small>
+    </footer>
+</body>
+</html>
