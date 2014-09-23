@@ -1,0 +1,27 @@
+        .green{color:green;}
+        .hide{display:none;}
+        .show{display:inherit;}
+    	.alignright{text-align: right;}
+    	.textlarge{font-size: 24pt;}
+    	td.progress{
+    		padding-bottom: 15px;
+    		text-align: center
+    	}
+    	#result{
+    		font-size:24px;
+    	}
+        #answer{
+        	font-size: 24pt;
+        	font-family: Times New Roman;
+        	width:75px;
+        }
+        #btnNext{
+        	width:75px;
+        	height: 48px;
+        	margin: 0px;
+        	padding: 0px;
+        	margin-bottom: 3px;
+        }
+        #feedback{
+        	font-size:24pt;
+        }
