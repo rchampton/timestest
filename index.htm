@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <link rel="icon" type="image/ico" href="favicon.ico">
     <title>Times Tester</title>
     <style>
+        .green{color:green;}
+        .hide{display:none;}
+        .show{display:inherit;}
     	.alignright{text-align: right;}
     	.textlarge{font-size: 24pt;}
-    	#progress{
-    		padding-bottom: 33px;
-    		margin-bottom: 33px;
+    	td.progress{
+    		padding-bottom: 15px;
+    		text-align: center
     	}
     	#result{
     		font-size:24px;
@@ -17,31 +21,21 @@
         	font-size: 24pt;
         	font-family: Times New Roman;
         	width:75px;
-        	margin: 0px;
-        	padding: 0px;
         }
         #btnNext{
         	width:75px;
         	height: 48px;
         	margin: 0px;
         	padding: 0px;
-        }
-        .green{
-        	color:green;
+        	margin-bottom: 3px;
         }
         #feedback{
         	font-size:24pt;
         }
-        .hide{
-            display:none;
-        }
-        .show{
-            display:inherit;
-        }
     </style>
+
     <script>
-        var ctrl, view;
-        var result={};
+        var base=0, ctrl, view, result={};
 
         document.addEventListener('DOMContentLoaded', function(){
             view=new View();
@@ -63,12 +57,26 @@
                 , elBase=document.getElementById('base')
                 , elProgress=document.getElementById('progress')
                 , elFeedback=document.getElementById('feedback')
+				, elForm=document.getElementById('form')
+				, elSetup=document.getElementById('setup')
                 ;
-            this.elForm=document.getElementById('form')
-            , this.elResult=document.getElementById('result')
+            elResult=document.getElementById('result')
+            , this.toggleSetup=function(){
+            	if(elForm.className=="hide"){
+            		elForm.className="show";
+            		elSetup.className="hide";
+            	}else{
+            		elForm.className="hide";
+            		elSetup.className="show";
+            	}
+            }
+            , this.showSetup=function(){
+				elForm.className="hide";
+				elSetup.className="show";
+            }
             , showResult=function(){
-                that.elResult.style.display='inherit';
-                that.elForm.style.display='none';
+                elResult.style.display='inherit';
+                elForm.style.display='none';
 
                 var good=0, bad=0, total=0;
                 for(var p in result )
@@ -76,9 +84,9 @@
                     else bad+=1;
                 total=good+bad;
                 var newp=document.createElement('p');
-                newp.innerHTML=''+good+ ' out of ' + total+'<br>';
+                newp.innerHTML='You answered '+good+ ' out of ' + total+'<br>';
                 newp.innerHTML+=(good/total*100).toFixed(0)+'%';
-                that.elResult.appendChild(newp);
+                elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
                 btnReload.focus();
             }
             , answer_keydown=function(event){
@@ -134,10 +142,11 @@
                     elBase.appendChild(elOpt);
                 }
             }, elBase_change=function(event){
-                console.log('base changed to ' + event.srcElement.options[event.srcElement.options.selectedIndex].value);
+                //console.log('base changed to ' + event.srcElement.options[event.srcElement.options.selectedIndex].value);
                 //ctrl.resetBase(event.srcElement.options[event.srcElement.options.selectedIndex].value);
                 dispatchEvent(new CustomEvent('seven.resetbase', {'detail':{'newbase':event.srcElement.options[event.srcElement.options.selectedIndex].value}}));
-                showProgress(1,13);
+                event.srcElement.options.selectedIndex=0;
+                //showProgress(1,13);
             }
             ;
 
@@ -180,17 +189,23 @@
             }, this.getQuestion=function(){
                 return new Question(this.ttr.base, this.rowIndex, this.ttr.valueAt(this.rowIndex));
             }, this.resetBase=function(event){
+				view.showProgress(1,13);
                 that._hasQuestions=false;
                 that.rowIndex=1;
                 that.ttr=that.tt.rowAt(event.detail.newbase);
+                that.toggleSetup();
                 that.view.showQuestion(that.getQuestion());
+            }, this.showSetup=function(){
+            	view.showSetup();
+            }, this.toggleSetup=function(){
+            	view.toggleSetup();
             }
             ;
 
             return this;
         };
-
     </script>
+
     <script>
         var Question=function(op1, op2, answer){
             this.op1=op1||0;
@@ -272,41 +287,45 @@
     </script>
 </head>
 <body>
-
-    <!-- The page header typically contains items such as your site heading, logo and possibly the main site navigation -->
-    <!-- ARIA: the landmark role "banner" is set as it is the prime heading or internal title of the page --> 
     <header role="banner">
         <h1><abbr title="Times Tester">Times Tester</abbr></h1>
-        
-        <!-- ARIA: the landmark role "navigation" is added here as the element contains site navigation
-        NOTE: The <nav> element does not have to be contained within a <header> element, even though the two examples on this page are. -->
-        <nav role="navigation">
-            <!-- This can contain your site navigation either in an unordered list or even a paragraph that contains links that allow users to navigate your site -->
-            <select id="base"><option value="">- Choose a base -</option></select>
-        </nav>
     </header>
-    <hr>
-    <!-- If you want to use an element as a wrapper, i.e. for styling only, then <div> is still the element to use -->
     <div id="content" class="wrap">
+        <div id="setup" class="hide">
+			<select id="base"><option value="">- Choose a base -</option></select>
+        </div>
+
         <div id="form">
-        	<table border="1" cellpadding="0" cellspacing="0">
-        		<tr><td style="padding-bottom: 33px; text-align:center;">
-					<span id="progress"></span>
+        	<table border="0" xcellpadding="0" xcellspacing="0">
+        		<tr>
+        			<td colspan="3" class="progress">
+						<span id="progress"></span>
+        			</td>
+        		</tr>
+        		<tr>
+        			<td>&nbsp;</td>
+        			<td class="alignright textlarge">
+                		<span id="op1" style="margin-left: 15px;">0</span>
+        			</td>
+        			<td>&nbsp;</td>
+        		</tr>
+        		<tr>
+        			<td class="textlarge">x</td>
+        			<td class="alignright textlarge"><span id="op2">0</span></td>
+        			<td>&nbsp;</td>
+        		</tr>
+        		<tr><td colspan="3">
+            		<hr>
         		</td></tr>
-        		<tr><td class="alignright textlarge">
-                	<span id="op1" style="margin-left: 15px;">0</span>
-        		</td></tr>
-        		<tr><td class="alignright textlarge">
-	                <span>x</span><span id="op2">0</span>
-        		</td></tr>
-        		<tr><td>
-            	<hr>
-        		</td></tr>
-        		<tr><td>
-				    <input type="number" id="answer">
-				    <button id="btnNext">Go!</button>
-				</td></tr>
-				<tr><td>
+        		<tr>
+        			<td>&nbsp;</td>
+        			<td><input type="number" id="answer"></td>
+        			<td>
+					    
+					    <button id="btnNext">Go!</button>
+					</td>
+				</tr>
+				<tr><td colspan="3" align="center">
 					<span id="feedback"></span>
 				</td></tr>
 			</table>
@@ -318,11 +337,13 @@
         </div>
     </div>
     
-    <!-- The main page footer can contain items such as copyright and contact information. It can also contain a duplicated navigation of your site which is not usually contained within a <nav> -->
-    <!-- ARIA: the landmark role "contentinfo" is added here as it contains metadata that applies to the parent document -->
     <footer role="contentinfo">
-        <!-- Copyright information can be contained within the <small> element. The <time> element is used here to indicate that the '2013' is a date -->
-        <small>footer</small>
+    	<hr>
+        <nav role="navigation">
+        	<a href="#" onclick="javascript:window.location.reload();">Restart</a> | <a href="#" onclick="javascript:ctrl.showSetup();">Setup</a>
+        	<br><br>
+			<small style="text-align:right">2014 Russell Hampton</small>
+        </nav>
     </footer>
 </body>
 </html>
