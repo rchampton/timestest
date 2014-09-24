@@ -5,6 +5,7 @@
     <link rel="icon" type="image/ico" href="favicon.ico">
     <link rel="stylesheet" href="css/styles.css">
     <title>Times Table Tester</title>
+    <!--<style>h1, .textlarge, #answer {font-size:9px;}</style>-->
     <script src="js/Timestable.js"></script>
 
     <script>
@@ -22,7 +23,6 @@
         });
 
         var View=function(){
-            var that=this;
             var elOp1=document.getElementById('op1')
                 , elOp2=document.getElementById('op2')
                 , elAnswer=document.getElementById('answer')
@@ -32,57 +32,69 @@
                 , elFeedback=document.getElementById('feedback')
 				, elForm=document.getElementById('form')
 				, elSetup=document.getElementById('setup')
-                ;
-            elResult=document.getElementById('result')
-            , this.toggleSetup=function(){
-            	if(elForm.className=="hide"){
-            		elForm.className="show";
-            		elSetup.className="hide";
-            	}else{
-            		elForm.className="hide";
-            		elSetup.className="show";
-            	}
-            }
-            , this.showSetup=function(){
-				elForm.className="hide";
-				if(elResult.className=='show')
-					elResult.className='hide';
-				elSetup.className="show";
-            }
-            , showResult=function(){
-                //elResult.style.display='inherit';
-                elResult.className='show';
-                elForm.className='hide';//style.display='none';
+                , elResult=document.getElementById('result')
+                , elBasePopulate=function(){
+                    var elOpt;
+                    for(var i=1; i<=13; i++){
+                        elOpt=document.createElement('option');
+                        elOpt.value=i;
+                        elOpt.innerHTML=i.toString();
+                        elBase.appendChild(elOpt);
+                    }
+                }, elBase_change=function(event){
+                    dispatchEvent(new CustomEvent('seven.resetbase', {'detail':{'newbase':event.srcElement.options[event.srcElement.options.selectedIndex].value}}));
+                    event.srcElement.options.selectedIndex=0;
+                }
+                , showResult=function(){
+                    elResult.className='show';
+                    elForm.className='hide';
 
-                var good=0, bad=0, total=0;
-                for(var p in result )
-                    if(result[p])good+=1;
-                    else bad+=1;
-                total=good+bad;
-                var newp=document.createElement('p');
-                newp.innerHTML='You answered '+good+ ' out of ' + total+'<br>';
-                newp.innerHTML+=(good/total*100).toFixed(0)+'%';
-                elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
-                btnReload.focus();
-            }
-            , answer_keydown=function(event){
-                if(elBtnNext.disabled){
-                    if(event.keyCode==9)event.preventDefault();
-                    return;
+                    var good=0, bad=0, total=0;
+                    for(var p in result )
+                        if(result[p])good+=1;
+                        else bad+=1;
+                    total=good+bad;
+                    var newp=document.createElement('p');
+                    newp.innerHTML='You answered '+good+ ' out of ' + total+'<br>';
+                    newp.innerHTML+=(good/total*100).toFixed(0)+'%';
+                    elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
+                    btnReload.focus();
                 }
-                if(event.keyCode==13||event.keyCode==9||event.keyCode==39){
-                    var canceled=elBtnNext.dispatchEvent(new Event('click'));
-                    event.preventDefault();
+                , answer_keydown=function(event){
+                    if(elBtnNext.disabled){
+                        if(event.keyCode==9)event.preventDefault();
+                        return;
+                    }
+                    if(event.keyCode==13||event.keyCode==9||event.keyCode==39){
+                        var canceled=elBtnNext.dispatchEvent(new Event('click'));
+                        event.preventDefault();
+                    }
+                }, btnNext_click=function(event){
+                    dispatchEvent(new CustomEvent('seven.answered', {'detail':{'answer':elAnswer.value}}));
+                    setTimeout(function(){
+                            elAnswer.value=''; 
+                            elAnswer.focus();
+                        },100);
+                }, showProgress=function(index, outof){
+                    elProgress.innerHTML=''+index+' / '+outof;
+                }, toggleSetup=function(){
+                    if(elForm.className=="hide"){
+                        elForm.className="show";
+                        elSetup.className="hide";
+                    }else{
+                        elForm.className="hide";
+                        elSetup.className="show";
+                    }
+                }, showSetup=function(){
+                    elForm.className="hide";
+                    if(elResult.className=='show')
+                        elResult.className='hide';
+                    elSetup.className="show";
                 }
-            }, btnNext_click=function(event){
-                dispatchEvent(new CustomEvent('seven.answered', {'detail':{'answer':elAnswer.value}}));
-                setTimeout(function(){
-                        elAnswer.value=''; 
-                        elAnswer.focus();
-                    },100);
-            }, showProgress=function(index, outof){
-                elProgress.innerHTML=''+index+' / '+outof;
-            }, this.showQuestion=function(q){
+                ;
+
+            var that=this;
+            this.showQuestion=function(q){
                 elAnswer.focus();
                 elOp1.innerHTML=q.op1
                 , elOp2.innerHTML=q.op2;
@@ -96,46 +108,29 @@
                     elFeedback.innerHTML="Not quite..";
                 }
                 setTimeout(function(){
-                        elFeedback.innerHTML='';
-                        elFeedback.removeAttribute('class');
-                        elBtnNext.disabled=false;
+                    elFeedback.innerHTML='';
+                    elFeedback.removeAttribute('class');
+                    elBtnNext.disabled=false;
 
-                        if(isCorrect){
-                            showProgress(index, outof);
-                            that.showQuestion(q);
+                    if(isCorrect){
+                        showProgress(index, outof);
+                        that.showQuestion(q);
 
-                            if(isOver){
-                                showResult();
-                            }
+                        if(isOver){
+                            showResult();
                         }
-                    }, delay);
-            }, elBasePopulate=function(){
-                var elOpt;
-                for(var i=1; i<=13; i++){
-                    elOpt=document.createElement('option');
-                    elOpt.value=i;
-                    elOpt.innerHTML=i.toString();
-                    elBase.appendChild(elOpt);
-                }
-            }, elBase_change=function(event){
-                //console.log('base changed to ' + event.srcElement.options[event.srcElement.options.selectedIndex].value);
-                //ctrl.resetBase(event.srcElement.options[event.srcElement.options.selectedIndex].value);
-                dispatchEvent(new CustomEvent('seven.resetbase', {'detail':{'newbase':event.srcElement.options[event.srcElement.options.selectedIndex].value}}));
-                event.srcElement.options.selectedIndex=0;
-                //showProgress(1,13);
-            }
-            ;
+                    }
+                }, delay);
+            };
 
             // Init
             elBasePopulate();
             elAnswer.addEventListener('keydown', answer_keydown);
             elBtnNext.addEventListener('click', btnNext_click);
-            /* This works but you have the instance ref 'view' so, no good
-            this.bc=btnNext_click;
-            elBtnNext.addEventListener('click', function(){view.bc.apply(view)}); 
-            */
             elBase.addEventListener('change', elBase_change);
-            
+
+            this.toggleSetup=toggleSetup;
+            this.showSetup=showSetup;
             this.showProgress=showProgress;
             return this;
         };
