@@ -5,195 +5,65 @@
     <link rel="icon" type="image/ico" href="favicon.ico">
     <link rel="stylesheet" href="css/styles.css">
     <title>Times Table Tester</title>
-    <!--<style>h1, .textlarge, #answer {font-size:9px;}</style>-->
+    <style>h1, .textlarge, #answer {font-size:9px;}</style>
+    <script src="js/Question.js"></script>
     <script src="js/Timestable.js"></script>
+    <script src="js/Config.js"></script>
+    <script src="js/View.js"></script>
+    <script src="js/Ctrl.js"></script>
 
-    <script>
+    <script>// View, Ctrl, onload
         var base=0, ctrl, view, result={};
 
         document.addEventListener('DOMContentLoaded', function(){
             view=new View();
             ctrl=new Ctrl(view);
 
-            view.showProgress(1,13);
-            view.showQuestion(ctrl.getQuestion());
+/*            view.showProgress(1,13);
+            view.showQuestion(ctrl.getQuestion());*/
+            view.showSetup();
             addEventListener('seven.answered', ctrl.answered);
             addEventListener('seven.resetbase', ctrl.resetBase);
             document.getElementById('btnReload').addEventListener('click', ctrl.reload);
         });
-
-        var View=function(){
-            var elOp1=document.getElementById('op1')
-                , elOp2=document.getElementById('op2')
-                , elAnswer=document.getElementById('answer')
-                , elBtnNext=document.getElementById('btnNext')
-                , elBase=document.getElementById('base')
-                , elProgress=document.getElementById('progress')
-                , elFeedback=document.getElementById('feedback')
-				, elForm=document.getElementById('form')
-				, elSetup=document.getElementById('setup')
-                , elResult=document.getElementById('result')
-                , elBasePopulate=function(){
-                    var elOpt;
-                    for(var i=1; i<=13; i++){
-                        elOpt=document.createElement('option');
-                        elOpt.value=i;
-                        elOpt.innerHTML=i.toString();
-                        elBase.appendChild(elOpt);
-                    }
-                }, elBase_change=function(event){
-                    dispatchEvent(new CustomEvent('seven.resetbase', {'detail':{'newbase':event.srcElement.options[event.srcElement.options.selectedIndex].value}}));
-                    event.srcElement.options.selectedIndex=0;
-                }
-                , showResult=function(){
-                    elResult.className='show';
-                    elForm.className='hide';
-
-                    var good=0, bad=0, total=0;
-                    for(var p in result )
-                        if(result[p])good+=1;
-                        else bad+=1;
-                    total=good+bad;
-                    var newp=document.createElement('p');
-                    newp.innerHTML='You answered '+good+ ' out of ' + total+'<br>';
-                    newp.innerHTML+=(good/total*100).toFixed(0)+'%';
-                    elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
-                    btnReload.focus();
-                }
-                , answer_keydown=function(event){
-                    if(elBtnNext.disabled){
-                        if(event.keyCode==9)event.preventDefault();
-                        return;
-                    }
-                    if(event.keyCode==13||event.keyCode==9||event.keyCode==39){
-                        var canceled=elBtnNext.dispatchEvent(new Event('click'));
-                        event.preventDefault();
-                    }
-                }, btnNext_click=function(event){
-                    dispatchEvent(new CustomEvent('seven.answered', {'detail':{'answer':elAnswer.value}}));
-                    setTimeout(function(){
-                            elAnswer.value=''; 
-                            elAnswer.focus();
-                        },100);
-                }, showProgress=function(index, outof){
-                    elProgress.innerHTML=''+index+' / '+outof;
-                }, toggleSetup=function(){
-                    if(elForm.className=="hide"){
-                        elForm.className="show";
-                        elSetup.className="hide";
-                    }else{
-                        elForm.className="hide";
-                        elSetup.className="show";
-                    }
-                }, showSetup=function(){
-                    elForm.className="hide";
-                    if(elResult.className=='show')
-                        elResult.className='hide';
-                    elSetup.className="show";
-                }
-                ;
-
-            var that=this;
-            this.showQuestion=function(q){
-                elAnswer.focus();
-                elOp1.innerHTML=q.op1
-                , elOp2.innerHTML=q.op2;
-            }, this.showFeedback=function(isCorrect, index, outof, q, isOver){
-                elBtnNext.disabled=true;
-                var delay=(isCorrect)?500:250;
-                if(isCorrect){
-                    elFeedback.innerHTML="Right!";
-                    elFeedback.setAttribute('class', 'green');
-                }else{
-                    elFeedback.innerHTML="Not quite..";
-                }
-                setTimeout(function(){
-                    elFeedback.innerHTML='';
-                    elFeedback.removeAttribute('class');
-                    elBtnNext.disabled=false;
-
-                    if(isCorrect){
-                        showProgress(index, outof);
-                        that.showQuestion(q);
-
-                        if(isOver){
-                            showResult();
-                        }
-                    }
-                }, delay);
-            };
-
-            // Init
-            elBasePopulate();
-            elAnswer.addEventListener('keydown', answer_keydown);
-            elBtnNext.addEventListener('click', btnNext_click);
-            elBase.addEventListener('change', elBase_change);
-
-            this.toggleSetup=toggleSetup;
-            this.showSetup=showSetup;
-            this.showProgress=showProgress;
-            return this;
-        };
-
-        var Ctrl=function(view){
-            var that=this;
-            this.user='User'
-            , this._hasQuestions=true
-            , this.view=view
-            , this.tt=new Timestable(1,13)
-            , this.ttr=this.tt.rowAt(3)
-            , this.rowIndex=1
-            , this.hasQuestions=function(){return that._hasQuestions;}
-            , this.currAnswer=function(){return that.ttr.valueAt(that.rowIndex)||undefined;}
-            , this.reload=function(){window.location.reload();}
-            , this.answered=function(event){
-                if(that.currAnswer()==event.detail.answer){
-                    if(!result.hasOwnProperty(that.rowIndex))
-                        result[that.rowIndex]=true;
-                    that.rowIndex+=1;
-                    view.showFeedback(true, that.rowIndex, 13, that.getQuestion(), (that.rowIndex>13)?true:false);
-                }else{
-                    if(!result.hasOwnProperty(that.rowIndex))
-                        result[that.rowIndex]=false;
-                    view.showFeedback(false);
-                }
-            }, this.getQuestion=function(){
-                return new Question(this.ttr.base, this.rowIndex, this.ttr.valueAt(this.rowIndex));
-            }, this.resetBase=function(event){
-				view.showProgress(1,13);
-                that._hasQuestions=false;
-                that.rowIndex=1;
-                that.ttr=that.tt.rowAt(event.detail.newbase);
-                that.toggleSetup();
-                that.view.showQuestion(that.getQuestion());
-            }, this.showSetup=function(){
-            	view.showSetup();
-            }, this.toggleSetup=function(){
-            	view.toggleSetup();
-            }
-            ;
-
-            return this;
-        };
-    </script>
-
-    <script>
-        var Question=function(op1, op2, answer){
-            this.op1=op1||0;
-            this.op2=op2||0;
-            this.answer=answer||0;
-
-            return this;
-        };
     </script>
 </head>
 <body>
+
     <header role="banner">
+
         <h1><abbr title="Times Tester">Times Tester</abbr></h1>
     </header>
+
     <div id="content" class="wrap">
         <div id="setup" class="hide">
-			<select id="base"><option value="">- Choose a base -</option></select>
+            <h1>Config</h1>
+            <div>
+                <h3>Available Configs</h3>
+                <a href="#">Default</a>
+            </div>
+            <div>
+                <h3>Create a Config</h3>
+                <fieldset>
+                    <label for="base">Multiplication base</label>
+                    <select id="base"><option value="">- Choose a base -</option></select>
+                </fieldset>
+                <fieldset>
+                    <label for="cfgOrder">Order</label>
+                    <input type="radio" name="cfgOrder" value="forward" checked="true">Forward</input>
+                    <input type="radio" name="cfgOrder" value="backward">Backward</input>
+                    <input type="radio" name="cfgOrder" value="random">Random</input>
+                </fieldset>
+                <fieldset>
+                    <label for="cfgNumQuestions">Number of Questions</label>
+                    <input id="cfgNumQuestions" value="13">
+                </fieldset>
+                <fieldset>
+                    <label for="cfgName">Save config as</label>
+                    <input id="cfgName">
+                </fieldset>
+                <button onclick="ctrl.setConfig();">Done</button>
+            </div>
         </div>
 
         <div id="form">
