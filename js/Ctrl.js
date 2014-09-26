@@ -20,7 +20,7 @@ var Ctrl=function(view){
             if(isOver){
                 that.rowIndex=0;
             }
-            view.showFeedback(true, that.rowIndex, 13, that.getQuestion(), isOver);
+            view.showFeedback(true, that.rowIndex, that.questions.length, that.getQuestion(), isOver);
         }else{
             if(!result.hasOwnProperty(that.rowIndex))
                 result[that.rowIndex]=false;
@@ -48,6 +48,23 @@ var Ctrl=function(view){
                 }
                 break;
             case 'random':
+                for(var i=1, max=config.numberOfQuestions; i<=max; i++){
+                    question=new Question(ttrow.base, i, ttrow.valueAt(i));
+                    questions.push(question);
+                }
+                var randomize=function(ar){
+                    // Fisher-Yates algo
+                    var index=ar.length, tmp, randIndex;
+                    while(index!=0){
+                        randIndex=Math.floor(Math.random()*index);
+                        index-=1;
+                        tmp=ar[index];
+                        ar[index]=ar[randIndex];
+                        ar[randIndex]=tmp;
+                    }
+                    return ar;
+                };
+                questions=randomize(questions);
                 break;
             case 'forward':
             default:
