@@ -23,7 +23,6 @@ var View=function(){
             elBase.appendChild(elOpt);
         }, elBase_change=function(event){
             dispatchEvent(new CustomEvent('seven.resetbase', {'detail':{'newbase':event.srcElement.options[event.srcElement.options.selectedIndex].value}}));
-//                    event.srcElement.options.selectedIndex=0;
         }
         , showResult=function(){
             elResult.className='show';
@@ -74,8 +73,31 @@ var View=function(){
                     ps[i].remove();
             }
             elSetup.className="show";
-        }
-        ;
+        }, updateConfigs=function(){
+            var elConfig=document.getElementById('availconfig');
+            // Clear any existing children
+            for(var i=elConfig.childNodes.length-1; i>=0; i--)
+                elConfig.childNodes[i].remove();
+            for(var p in config){
+                var a=document.createElement('a')
+                    , adel=document.createElement('a')
+                    , span=document.createElement('span');
+                a.href=adel.href='#';
+                a.innerHTML=p;
+                adel.innerHTML='X';
+                span.innerHTML='&nbsp; &nbsp;';
+                (function(p){
+                    a.onclick=function(){ctrl.setConfig(Config.prototype.load(JSON.stringify(config[p])))};
+                    adel.onclick=function(){ctrl.removeConfig(p);};
+                })(p);
+
+                elConfig.appendChild(a);
+                adel.innerHTML='Remove';
+                elConfig.appendChild(span);
+                elConfig.appendChild(adel);
+                elConfig.appendChild(document.createElement('br'));
+            }
+        };
 
     var that=this;
     this.showQuestion=function(q){
@@ -116,5 +138,6 @@ var View=function(){
     this.toggleSetup=toggleSetup;
     this.showSetup=showSetup;
     this.showProgress=showProgress;
+    this.updateConfigs=updateConfigs;
     return this;
 };

@@ -33,9 +33,6 @@ var Ctrl=function(view){
         that._hasQuestions=false;
         that.ttr=that.tt.rowAt(event.detail.newbase);
         that.rowIndex=0;
-/*                view.showProgress(1,13);
-        that.toggleSetup();
-        that.view.showQuestion(that.getQuestion());*/
     }, this.showSetup=function(){
     	view.showSetup();
     }, this.toggleSetup=function(){
@@ -67,21 +64,25 @@ var Ctrl=function(view){
         if(newConfig==undefined){
             newConfig=new Config();
             newConfig.readFromForm();
+            if(newConfig.name!=undefined){
+                config[newConfig.name]=newConfig;
+                localStorage.config=JSON.stringify(config);
+                that.view.updateConfigs();
+            }
         }
 
-console.debug('newConfig ' + JSON.stringify(newConfig));
-        if(newConfig.name!=undefined){
-            config[newConfig.name]=newConfig;
-            localStorage.config=JSON.stringify(config);
-        }
         this.currConfig=newConfig;
         that.toggleSetup();
         view.showProgress(1, newConfig.numberOfQuestions);
         that.questions=that.getQuestions(newConfig);
-console.log('that.rowIndex ' + that.rowIndex);
         that.view.showQuestion(that.getQuestion());
-    }
-    ;
+    }, this.removeConfig=function(configname){
+        if(config.hasOwnProperty(configname)){
+            delete config[configname];
+            localStorage.config=JSON.stringify(config);
+            that.view.updateConfigs();
+        }
+    };
 
     return this;
 };
