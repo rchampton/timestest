@@ -16,7 +16,11 @@ var Ctrl=function(view){
             if(!result.hasOwnProperty(that.rowIndex))
                 result[that.rowIndex]=true;
             that.rowIndex+=1;
-            view.showFeedback(true, that.rowIndex, 13, that.getQuestion(), (that.rowIndex>that.currConfig.numberOfQuestions-1)?true:false);
+            var isOver=(that.rowIndex>that.currConfig.numberOfQuestions-1)?true:false;
+            if(isOver){
+                that.rowIndex=0;
+            }
+            view.showFeedback(true, that.rowIndex, 13, that.getQuestion(), isOver);
         }else{
             if(!result.hasOwnProperty(that.rowIndex))
                 result[that.rowIndex]=false;
@@ -58,9 +62,14 @@ var Ctrl=function(view){
         }
 
         return questions;
-    }, this.setConfig=function(){
-        var newConfig=new Config();
-        newConfig.readFromForm();
+    }, this.setConfig=function(o){
+        var newConfig=o;
+        if(newConfig==undefined){
+            newConfig=new Config();
+            newConfig.readFromForm();
+        }
+
+console.debug('newConfig ' + JSON.stringify(newConfig));
         if(newConfig.name!=undefined){
             config[newConfig.name]=newConfig;
             localStorage.config=JSON.stringify(config);
@@ -69,6 +78,7 @@ var Ctrl=function(view){
         that.toggleSetup();
         view.showProgress(1, newConfig.numberOfQuestions);
         that.questions=that.getQuestions(newConfig);
+console.log('that.rowIndex ' + that.rowIndex);
         that.view.showQuestion(that.getQuestion());
     }
     ;

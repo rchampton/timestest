@@ -24,3 +24,14 @@ Config.prototype.readFromForm=function(){
     this.name=document.getElementById('cfgName').value;
     if(this.name=='')this.name=undefined;
 };
+
+Config.prototype.load=function(configAsJSON){
+    var o=JSON.parse(configAsJSON);
+
+    this.base=o.base;
+    this.order=o.order;
+    this.numberOfQuestions=o.numberOfQuestions;
+    this.name=o.name;
+
+    return this;
+};

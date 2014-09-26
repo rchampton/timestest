@@ -67,8 +67,12 @@ var View=function(){
             }
         }, showSetup=function(){
             elForm.className="hide";
-            if(elResult.className=='show')
+            if(elResult.className=='show'){
                 elResult.className='hide';
+                var ps=elResult.getElementsByTagName('p');
+                for(var i=ps.length-1; i>=0; i--)                
+                    ps[i].remove();
+            }
             elSetup.className="show";
         }
         ;
