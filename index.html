@@ -4,40 +4,27 @@
     <meta charset="utf-8">
     <link rel="icon" type="image/ico" href="favicon.ico">
     <link rel="stylesheet" href="css/styles.css">
-    <title>Times Table Tester</title>
-<!--    <style>h1, .textlarge, #answer {font-size:9px;}</style> -->
+    <title>Times Tables</title>
+    <!-- <style>h1, .textlarge, #answer {font-size:9px;}</style>  -->
     <script src="js/Question.js"></script>
     <script src="js/Timestable.js"></script>
     <script src="js/Config.js"></script>
     <script src="js/View.js"></script>
     <script src="js/Ctrl.js"></script>
 
-    <script>// View, Ctrl, onload
+    <script>
         var base=0, ctrl, view, result={};
 
         document.addEventListener('DOMContentLoaded', function(){
             view=new View();
             ctrl=new Ctrl(view);
 
-            var elConfig=document.getElementById('availconfig');
-            for(var p in config){
-                var a=document.createElement('a');
-                a.href='#';
-                // a.onclick='ctrl.setConfig(Config.prototype.load(\'' + localStorage.config[p] + '\'))';
-                a.onclick=function(){console.debug('++ '+config[p]); ctrl.setConfig(Config.prototype.load(JSON.stringify(config[p]))) };
-                a.innerHTML=p;
-console.log("Appending " + p + "... " + config[p]);
-                elConfig.appendChild(a);
-                elConfig.appendChild(document.createElement('br'));
-            }
-
-
-/*            view.showProgress(1,13);
-            view.showQuestion(ctrl.getQuestion());*/
-            ctrl.showSetup();
             addEventListener('seven.answered', ctrl.answered);
             addEventListener('seven.resetbase', ctrl.resetBase);
             document.getElementById('btnReload').addEventListener('click', ctrl.reload);
+
+            view.updateConfigs();
+            ctrl.showSetup();
         });
     </script>
 </head>
@@ -81,7 +68,7 @@ console.log("Appending " + p + "... " + config[p]);
                     <label for="cfgName">Save config as</label>
                     <input id="cfgName">
                 </fieldset>
-                <button onclick="ctrl.setConfig();">Done</button>
+                <button onclick="ctrl.setConfig();">Start</button>
             </div>
         </div>
 

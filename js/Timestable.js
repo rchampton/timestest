@@ -60,5 +60,4 @@ TimestableRow.prototype.asArray=function(){
 };
 TimestableRow.prototype.test=function(){
     var ttr2=new TimestableRow(2,1,13);
-    console.log(ttr2.print());
 };

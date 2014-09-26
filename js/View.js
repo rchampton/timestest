@@ -18,12 +18,11 @@ var View=function(){
                 elBase.appendChild(elOpt);
             }
             elOpt=document.createElement('option');
-            elOpt.value='*';
+            elOpt.value='random';
             elOpt.innerHTML='Random';
             elBase.appendChild(elOpt);
         }, elBase_change=function(event){
             dispatchEvent(new CustomEvent('seven.resetbase', {'detail':{'newbase':event.srcElement.options[event.srcElement.options.selectedIndex].value}}));
-//                    event.srcElement.options.selectedIndex=0;
         }
         , showResult=function(){
             elResult.className='show';
@@ -36,7 +35,16 @@ var View=function(){
             total=good+bad;
             var newp=document.createElement('p');
             newp.innerHTML='You answered '+good+ ' out of ' + total+'<br>';
-            newp.innerHTML+=(good/total*100).toFixed(0)+'%';
+            newp.innerHTML+=(good/total*100).toFixed(0)+'%<br>';
+
+            var timeTaken=Date.now()-ctrl.startTime;
+            var timeTakenSec=timeTaken/1000>>0;
+            var timeTakenMin=(timeTakenSec<60)?'':timeTakenSec/60>>0;
+            var timeTakenDisplay=
+                ((timeTakenMin!='')?timeTakenMin+ ' min ':'') +
+                ((timeTakenMin!='')?(timeTakenSec%60)>>0:timeTakenSec)+' sec';
+            newp.innerHTML+='in '+timeTakenDisplay + '<br>';
+
             elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
             btnReload.focus();
         }
@@ -56,7 +64,7 @@ var View=function(){
                     elAnswer.focus();
                 },100);
         }, showProgress=function(index, outof){
-            elProgress.innerHTML=''+index+' / '+outof;
+            elProgress.innerHTML='' + index + ' / ' + outof;
         }, toggleSetup=function(){
             if(elForm.className=="hide"){
                 elForm.className="show";
@@ -74,8 +82,31 @@ var View=function(){
                     ps[i].remove();
             }
             elSetup.className="show";
-        }
-        ;
+        }, updateConfigs=function(){
+            var elConfig=document.getElementById('availconfig');
+            // Clear any existing children
+            for(var i=elConfig.childNodes.length-1; i>=0; i--)
+                elConfig.childNodes[i].remove();
+            for(var p in config){
+                var a=document.createElement('a')
+                    , adel=document.createElement('a')
+                    , span=document.createElement('span');
+                a.href=adel.href='#';
+                a.innerHTML=p;
+                adel.innerHTML='X';
+                span.innerHTML='&nbsp; &nbsp;';
+                (function(p){
+                    a.onclick=function(){ctrl.setConfig(Config.prototype.load(JSON.stringify(config[p])))};
+                    adel.onclick=function(){ctrl.removeConfig(p);};
+                })(p);
+
+                elConfig.appendChild(a);
+                adel.innerHTML='Remove';
+                elConfig.appendChild(span);
+                elConfig.appendChild(adel);
+                elConfig.appendChild(document.createElement('br'));
+            }
+        };
 
     var that=this;
     this.showQuestion=function(q){
@@ -100,7 +131,7 @@ var View=function(){
                 if(isOver){
                     showResult();
                 }else{
-                    showProgress(index, outof);
+                    showProgress(index+1, outof);
                     that.showQuestion(q);
                 }
             }
@@ -116,5 +147,6 @@ var View=function(){
     this.toggleSetup=toggleSetup;
     this.showSetup=showSetup;
     this.showProgress=showProgress;
+    this.updateConfigs=updateConfigs;
     return this;
 };
