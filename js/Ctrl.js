@@ -56,9 +56,10 @@ var Ctrl=function(view){
                     row=Math.floor(Math.random()*config.numberOfQuestions)+1;
                     col=Math.floor(Math.random()*config.numberOfQuestions)+1;
                     newq=new Question(row, col, tt.valueAt(row,col));
-                    if(alreadyExists(newq)){
+// TODO do we worry about an infinite loop under certain conditions?
+/*                    if(alreadyExists(newq)){
                         console.debug('Rejecting question #'+i+' '+newq+' as duplicate');
-                    }
+                    }*/
                 }while(alreadyExists(newq));
                 questions.push(newq);
             }
@@ -114,9 +115,10 @@ var Ctrl=function(view){
 
         this.currConfig=newConfig;
         that.toggleSetup();
-        view.showProgress(1, newConfig.numberOfQuestions);
         that.questions=that.getQuestions(newConfig);
+        view.showProgress(1, newConfig.numberOfQuestions);
         that.view.showQuestion(that.getQuestion());
+        this.startTime=Date.now();
     }, this.removeConfig=function(configname){
         if(config.hasOwnProperty(configname)){
             delete config[configname];

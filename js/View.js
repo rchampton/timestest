@@ -35,7 +35,16 @@ var View=function(){
             total=good+bad;
             var newp=document.createElement('p');
             newp.innerHTML='You answered '+good+ ' out of ' + total+'<br>';
-            newp.innerHTML+=(good/total*100).toFixed(0)+'%';
+            newp.innerHTML+=(good/total*100).toFixed(0)+'%<br>';
+
+            var timeTaken=Date.now()-ctrl.startTime;
+            var timeTakenSec=timeTaken/1000>>0;
+            var timeTakenMin=(timeTakenSec<60)?'':timeTakenSec/60>>0;
+            var timeTakenDisplay=
+                ((timeTakenMin!='')?timeTakenMin+ ' min ':'') +
+                ((timeTakenMin!='')?(timeTakenSec%60)>>0:timeTakenSec)+' sec';
+            newp.innerHTML+='in '+timeTakenDisplay + '<br>';
+
             elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
             btnReload.focus();
         }
@@ -55,7 +64,7 @@ var View=function(){
                     elAnswer.focus();
                 },100);
         }, showProgress=function(index, outof){
-            elProgress.innerHTML=''+index+' / '+outof;
+            elProgress.innerHTML='' + index + ' / ' + outof;
         }, toggleSetup=function(){
             if(elForm.className=="hide"){
                 elForm.className="show";
@@ -122,7 +131,7 @@ var View=function(){
                 if(isOver){
                     showResult();
                 }else{
-                    showProgress(index, outof);
+                    showProgress(index+1, outof);
                     that.showQuestion(q);
                 }
             }
