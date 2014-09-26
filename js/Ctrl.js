@@ -39,42 +39,66 @@ var Ctrl=function(view){
     	view.toggleSetup();
     }, this.getQuestions=function(config){
         var question, questions=[];
-        var ttrow=new TTRow(config.base);
-        switch(config.order){
-            case 'backward':
-                for(var i=config.numberOfQuestions; i>0; i--){
-                    question=new Question(ttrow.base, i, ttrow.valueAt(i));
-                    questions.push(question);
-                }
-                break;
-            case 'random':
-                for(var i=1, max=config.numberOfQuestions; i<=max; i++){
-                    question=new Question(ttrow.base, i, ttrow.valueAt(i));
-                    questions.push(question);
-                }
-                var randomize=function(ar){
-                    // Fisher-Yates algo
-                    var index=ar.length, tmp, randIndex;
-                    while(index!=0){
-                        randIndex=Math.floor(Math.random()*index);
-                        index-=1;
-                        tmp=ar[index];
-                        ar[index]=ar[randIndex];
-                        ar[randIndex]=tmp;
-                    }
-                    return ar;
+        // TODO we need to deal with config.base='random' here
+        if(config.base=='random'){
+            var tt=new Timestable(1, config.numberOfQuestions)
+                , row=0
+                , col=0
+                , newq
+                , alreadyExists=function(q){
+                    for(var i=0, max=questions.length; i<max; i++)
+                        if(questions[i].equals(q))
+                            return true;
+                    return false;
                 };
-                questions=randomize(questions);
-                break;
-            case 'forward':
-            default:
-                for(var i=1, max=config.numberOfQuestions; i<=max; i++){
-                    question=new Question(ttrow.base, i, ttrow.valueAt(i));
-                    questions.push(question);
-                }
-                break;
+            for(var i=1, max=config.numberOfQuestions; i<=max; i++){
+                do{
+                    row=Math.floor(Math.random()*config.numberOfQuestions)+1;
+                    col=Math.floor(Math.random()*config.numberOfQuestions)+1;
+                    newq=new Question(row, col, tt.valueAt(row,col));
+                    if(alreadyExists(newq)){
+                        console.debug('Rejecting question #'+i+' '+newq+' as duplicate');
+                    }
+                }while(alreadyExists(newq));
+                questions.push(newq);
+            }
+        }else{
+            var ttrow=new TTRow(config.base);
+            switch(config.order){
+                case 'backward':
+                    for(var i=config.numberOfQuestions; i>0; i--){
+                        question=new Question(ttrow.base, i, ttrow.valueAt(i));
+                        questions.push(question);
+                    }
+                    break;
+                case 'random':
+                    for(var i=1, max=config.numberOfQuestions; i<=max; i++){
+                        question=new Question(ttrow.base, i, ttrow.valueAt(i));
+                        questions.push(question);
+                    }
+                    var randomize=function(ar){
+                        // Fisher-Yates algo
+                        var index=ar.length, tmp, randIndex;
+                        while(index!=0){
+                            randIndex=Math.floor(Math.random()*index);
+                            index-=1;
+                            tmp=ar[index];
+                            ar[index]=ar[randIndex];
+                            ar[randIndex]=tmp;
+                        }
+                        return ar;
+                    };
+                    questions=randomize(questions);
+                    break;
+                case 'forward':
+                default:
+                    for(var i=1, max=config.numberOfQuestions; i<=max; i++){
+                        question=new Question(ttrow.base, i, ttrow.valueAt(i));
+                        questions.push(question);
+                    }
+                    break;
+            }
         }
-
         return questions;
     }, this.setConfig=function(o){
         var newConfig=o;

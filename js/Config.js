@@ -14,7 +14,11 @@ Config.prototype.toString=function(){
 };
 
 Config.prototype.readFromForm=function(){
-    this.base=(document.getElementById('base').options[document.getElementById('base').selectedIndex].value)>>0;
+    if(document.getElementById('base').options[document.getElementById('base').selectedIndex].value=='random')
+        this.base='random';
+    else 
+        this.base=(document.getElementById('base').options[document.getElementById('base').selectedIndex].value)>>0;
+
     this.order='forward';
     var orderOpts=document.getElementsByName('cfgOrder');
     for(var i=0, max=orderOpts.length; i<max; i++)

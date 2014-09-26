@@ -18,7 +18,7 @@ var View=function(){
                 elBase.appendChild(elOpt);
             }
             elOpt=document.createElement('option');
-            elOpt.value='*';
+            elOpt.value='random';
             elOpt.innerHTML='Random';
             elBase.appendChild(elOpt);
         }, elBase_change=function(event){
