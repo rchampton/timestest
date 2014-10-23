@@ -46,6 +46,14 @@ var View=function(){
             newp.innerHTML+='in '+timeTakenDisplay + '<br>';
 
             elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
+
+            newp=document.createElement('p');
+            newp.innerHTML='Questions missed:<br>';
+            for(var i=0, max=ctrl.missedQuestions.length; i<max; i++){
+              newp.innerHTML+=ctrl.missedQuestions[i]+'<br>';
+            }
+            elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
+
             btnReload.focus();
         }
         , answer_keydown=function(event){
@@ -60,7 +68,7 @@ var View=function(){
         }, btnNext_click=function(event){
             dispatchEvent(new CustomEvent('seven.answered', {'detail':{'answer':elAnswer.value}}));
             setTimeout(function(){
-                    elAnswer.value=''; 
+                    elAnswer.value='';
                     elAnswer.focus();
                 },100);
         }, showProgress=function(index, outof){
@@ -78,7 +86,7 @@ var View=function(){
             if(elResult.className=='show'){
                 elResult.className='hide';
                 var ps=elResult.getElementsByTagName('p');
-                for(var i=ps.length-1; i>=0; i--)                
+                for(var i=ps.length-1; i>=0; i--)
                     ps[i].remove();
             }
             elSetup.className="show";

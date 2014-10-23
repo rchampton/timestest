@@ -1,6 +1,7 @@
 var Ctrl=function(view){
     var that=this;
     this.user='User'
+    , this.missedQuestions=[]
     , this.currConfig
     , this.questions=[]
     , this._hasQuestions=true
@@ -22,8 +23,10 @@ var Ctrl=function(view){
             }
             view.showFeedback(true, that.rowIndex, that.questions.length, that.getQuestion(), isOver);
         }else{
-            if(!result.hasOwnProperty(that.rowIndex))
+            if(!result.hasOwnProperty(that.rowIndex)){
                 result[that.rowIndex]=false;
+                that.missedQuestions.push(that.getQuestion());
+            }
             view.showFeedback(false);
         }
     }, this.getQuestion=function(){
@@ -57,9 +60,6 @@ var Ctrl=function(view){
                     col=Math.floor(Math.random()*config.numberOfQuestions)+1;
                     newq=new Question(row, col, tt.valueAt(row,col));
 // TODO do we worry about an infinite loop under certain conditions?
-/*                    if(alreadyExists(newq)){
-                        console.debug('Rejecting question #'+i+' '+newq+' as duplicate');
-                    }*/
                 }while(alreadyExists(newq));
                 questions.push(newq);
             }
