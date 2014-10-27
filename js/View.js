@@ -90,6 +90,7 @@ var View=function(){
                     ps[i].remove();
             }
             elSetup.className="show";
+            document.getElementById('base').selectedIndex=1;
         }, updateConfigs=function(){
             var elConfig=document.getElementById('availconfig');
             // Clear any existing children
