@@ -118,11 +118,22 @@ var View=function(){
         };
 
     var that=this;
-    this.showQuestion=function(q){
+    this.showQuestion=function(q, baseFirst){
         elAnswer.focus();
-        elOp1.innerHTML=q.op1
-        , elOp2.innerHTML=q.op2;
-    }, this.showFeedback=function(isCorrect, index, outof, q, isOver){
+        if(baseFirst){
+            elOp1.innerHTML=q.op1
+            , elOp2.innerHTML=q.op2;
+        }else{
+            var randorder=Math.random();
+            if(randorder<.5){
+                elOp1.innerHTML=q.op1
+                , elOp2.innerHTML=q.op2;
+            }else{
+                elOp1.innerHTML=q.op2
+                , elOp2.innerHTML=q.op1;
+            }
+        }
+    }, this.showFeedback=function(isCorrect, index, outof, q, isOver, baseFirst){
         elBtnNext.disabled=true;
         var delay=(isCorrect)?500:250;
         if(isCorrect){
@@ -141,7 +152,7 @@ var View=function(){
                     showResult();
                 }else{
                     showProgress(index+1, outof);
-                    that.showQuestion(q);
+                    that.showQuestion(q, baseFirst);
                 }
             }
         }, delay);

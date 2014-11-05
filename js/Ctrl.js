@@ -21,7 +21,7 @@ var Ctrl=function(view){
             if(isOver){
                 that.rowIndex=0;
             }
-            view.showFeedback(true, that.rowIndex, that.questions.length, that.getQuestion(), isOver);
+            view.showFeedback(true, that.rowIndex, that.questions.length, that.getQuestion(), isOver, that.currConfig.baseFirst);
         }else{
             if(!result.hasOwnProperty(that.rowIndex)){
                 result[that.rowIndex]=false;
@@ -117,7 +117,7 @@ var Ctrl=function(view){
         that.toggleSetup();
         that.questions=that.getQuestions(newConfig);
         view.showProgress(1, newConfig.numberOfQuestions);
-        that.view.showQuestion(that.getQuestion());
+        that.view.showQuestion(that.getQuestion(), this.currConfig.baseFirst);
         this.startTime=Date.now();
     }, this.removeConfig=function(configname){
         if(config.hasOwnProperty(configname)){

@@ -4,13 +4,14 @@ var Config=function(){
     this.base=1;
     this.order='forward';
     this.numberOfQuestions=13;
+    this.baseFirst=true;
     this.name=undefined;
 
     return this;
 };
 
 Config.prototype.toString=function(){
-    return 'Config base='+this.base+' order='+this.order+' numberOfQuestions='+this.numberOfQuestions+' named '+(this.name||'Unnammed');
+    return 'Config base='+this.base+' order='+this.order+' numberOfQuestions='+this.numberOfQuestions+' baseFirst '+this.baseFirst+' named '+(this.name||'Unnammed');
 };
 
 Config.prototype.readFromForm=function(){
@@ -25,6 +26,7 @@ Config.prototype.readFromForm=function(){
         if(orderOpts[i].checked)
             this.order=orderOpts[i].value;
     this.numberOfQuestions=document.getElementById('cfgNumQuestions').value>>0;
+    this.baseFirst=document.getElementById('basefirst').checked;
     this.name=document.getElementById('cfgName').value;
     if(this.name=='')this.name=undefined;
 };
@@ -35,6 +37,7 @@ Config.prototype.load=function(configAsJSON){
     this.base=o.base;
     this.order=o.order;
     this.numberOfQuestions=o.numberOfQuestions;
+    this.baseFirst=o.baseFirst;
     this.name=o.name;
 
     return this;
