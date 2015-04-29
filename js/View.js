@@ -34,7 +34,7 @@ var View=function(){
                 else bad+=1;
             total=good+bad;
             var newp=document.createElement('p');
-            newp.innerHTML='You answered '+good+ ' out of ' + total+'<br>';
+            newp.innerHTML='You answered '+good+ ' out of ' + total + ' for base ' + ctrl.currConfig.base +'<br>';
             newp.innerHTML+=(good/total*100).toFixed(0)+'%<br>';
 
             var timeTaken=Date.now()-ctrl.startTime;
@@ -47,12 +47,14 @@ var View=function(){
 
             elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
 
-            newp=document.createElement('p');
-            newp.innerHTML='Questions missed:<br>';
-            for(var i=0, max=ctrl.missedQuestions.length; i<max; i++){
-              newp.innerHTML+=ctrl.missedQuestions[i]+'<br>';
+            if(ctrl.missedQuestions.length>0){
+                newp=document.createElement('p');
+                newp.innerHTML='Questions missed:<br>';
+                for(var i=0, max=ctrl.missedQuestions.length; i<max; i++){
+                  newp.innerHTML+=ctrl.missedQuestions[i]+'<br>';
+                }
+                elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
             }
-            elResult.insertBefore(newp, elResult.childNodes[elResult.childNodes.length-2]);
 
             btnReload.focus();
         }
